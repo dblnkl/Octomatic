@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Octavia's Octane</title>
+<meta name="description" content="Octavia's Octane — a blue bin → bench loadout calculator. Enter your total blue bins and get an even part count for every bench, plus a full material shopping list.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fff4f8;
+    --panel:#ffffff;
+    --panel2:#fdeef4;
+    --line:#f5d4e2;
+    --line-soft:#f9e4ee;
+    --ink:#53404c;
+    --dim:#a38797;
+    --faint:#c3a9b7;
+    --pink:#f27ba8;
+    --pink-deep:#e05a92;
+    --lav:#b79ce8;
+    --mint:#6fc9a8;
+    --peach:#ffb26b;
+    --r:18px;
+    --shadow:0 4px 14px rgba(226,138,178,.14);
+    --sans:'Quicksand',system-ui,sans-serif;
+    --disp:'Fredoka',var(--sans);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{color-scheme:light}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:15px;line-height:1.55;font-weight:500;
+    min-height:100vh;
+    padding:28px 18px 90px;
+  }
+  .wrap{max-width:800px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  header{text-align:center;margin-bottom:6px}
+  h1{
+    font-family:var(--disp);font-weight:700;font-size:38px;line-height:1.1;
+    color:var(--pink-deep);letter-spacing:.01em;
+  }
+  h1 .spark{font-size:26px;vertical-align:middle}
+  .sub{color:var(--dim);font-size:14px;margin:8px auto 24px;max-width:56ch;text-align:center}
+  .sub b{color:var(--ink);font-weight:700}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:flex;justify-content:center;gap:6px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:999px;padding:5px;width:fit-content;
+    margin:0 auto 14px;
+  }
+  .tabs button{
+    font-family:var(--disp);font-weight:600;font-size:14px;color:var(--dim);
+    background:none;border:0;border-radius:999px;padding:8px 20px;cursor:pointer;
+  }
+  .tabs button[aria-pressed="true"]{background:var(--pink);color:#fff;box-shadow:var(--shadow)}
+  .tabs button:focus-visible{outline:2px solid var(--pink-deep);outline-offset:1px}
+
+  /* ---------- input card ---------- */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .input-card{padding:18px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .input-card label{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--dim)}
+  input[type=number]{
+    background:#fff;border:2px solid var(--line);border-radius:14px;
+    color:var(--pink-deep);font-family:var(--disp);font-size:26px;font-weight:700;
+    padding:8px 16px;width:170px;
+  }
+  input[type=number]:focus{outline:none;border-color:var(--pink)}
+  .steppers{display:flex;gap:6px;flex-wrap:wrap}
+  .steppers button,.btn{
+    font-family:var(--disp);font-size:13.5px;font-weight:600;
+    background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    border-radius:999px;padding:8px 15px;cursor:pointer;
+  }
+  .steppers button:hover,.btn:hover{background:var(--pink);border-color:var(--pink);color:#fff}
+  .steppers button:focus-visible,.btn:focus-visible{outline:2px solid var(--pink-deep);outline-offset:1px}
+  .btn.small{padding:4px 13px;font-size:12.5px}
+
+  /* ---------- stats ---------- */
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:16px 0 6px}
+  .stat{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    padding:13px 16px;box-shadow:var(--shadow);border-top:4px solid var(--pink);
+  }
+  .stat .k{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.1em}
+  .stat .v{font-family:var(--disp);font-size:29px;font-weight:700;margin-top:1px}
+  .stat.parts{border-top-color:var(--mint)}   .stat.parts .v{color:var(--mint)}
+  .stat.bins{border-top-color:var(--pink)}    .stat.bins .v{color:var(--pink-deep)}
+  .stat.leftover{border-top-color:var(--peach)}.stat.leftover .v{color:var(--peach)}
+  .stat.total{border-top-color:var(--lav)}    .stat.total .v{color:var(--lav)}
+  .hint{color:var(--dim);font-size:13.5px;margin:10px 4px 0;min-height:1.4em;text-align:center}
+  .hint.ok{color:var(--mint);font-weight:700}
+
+  /* ---------- sections ---------- */
+  .section-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin:30px 0 12px;flex-wrap:wrap;
+  }
+  h2{
+    font-family:var(--disp);font-size:19px;font-weight:600;color:var(--ink);
+    display:flex;align-items:center;gap:8px;
+  }
+  h2 .dot{font-size:15px}
+  .section-head .meta{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px}
+
+  /* ---------- benches ---------- */
+  .benches{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:12px}
+  .bench{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    padding:13px 15px;cursor:pointer;text-align:left;font:inherit;color:inherit;
+    box-shadow:var(--shadow);transition:transform .12s, border-color .12s, opacity .12s;
+  }
+  .bench:hover{transform:translateY(-2px);border-color:var(--pink)}
+  .bench:focus-visible{outline:2px solid var(--pink-deep);outline-offset:1px}
+  .bench .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:8px}
+  .bench .name{font-family:var(--disp);font-weight:600;font-size:15.5px}
+  .bench .tick{
+    font-size:15px;width:26px;height:26px;border-radius:50%;flex-shrink:0;
+    border:2px solid var(--line);display:grid;place-items:center;color:transparent;
+    transition:background .12s,border-color .12s;
+  }
+  .bench[aria-pressed="true"]{opacity:.65}
+  .bench[aria-pressed="true"] .tick{background:#ffd9e8;border-color:var(--pink);color:var(--pink-deep)}
+  .bench[aria-pressed="true"] .tick::after{content:'♥'}
+  .bench[aria-pressed="true"] .name{text-decoration:line-through;text-decoration-color:var(--pink)}
+  .mat{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--panel2);border-radius:11px;padding:6px 11px;margin-top:5px;font-size:13px;
+  }
+  .mat .lbl{display:flex;align-items:center;gap:8px;color:var(--dim);font-weight:600}
+  .chip{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+  .mat .n{font-family:var(--disp);font-weight:700;font-size:14.5px;color:var(--ink)}
+
+  /* ---------- banner ---------- */
+  .banner{
+    display:none;margin:16px 0 0;padding:18px;text-align:center;
+    background:var(--panel);border:2px dashed var(--pink);border-radius:var(--r);
+  }
+  .banner.show{display:block}
+  .banner .big{font-family:var(--disp);font-size:26px;font-weight:700;color:var(--pink-deep)}
+  .banner .small{font-size:13px;color:var(--dim);margin-top:2px;font-weight:600}
+
+  /* ---------- shopping ---------- */
+  table{
+    width:100%;border-collapse:separate;border-spacing:0;background:var(--panel);
+    border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+  }
+  th,td{padding:9px 16px;text-align:left;font-size:13.5px}
+  th{
+    background:var(--panel2);color:var(--dim);text-transform:uppercase;
+    font-size:11px;letter-spacing:.1em;font-weight:700;
+  }
+  td .lbl{display:flex;align-items:center;gap:9px;font-weight:600}
+  td.num{font-family:var(--disp);font-weight:700;font-size:15px;text-align:right}
+  td.pct{color:var(--faint);font-size:12px;text-align:right;width:64px;font-weight:700}
+  tr+tr td{border-top:1px solid var(--line-soft)}
+  tr.total td{background:var(--panel2);color:var(--pink-deep)}
+  .bar{height:5px;border-radius:3px;margin-top:5px;background:var(--line-soft);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+
+  footer{margin-top:38px;color:var(--faint);font-size:12.5px;text-align:center;font-weight:600}
+  footer .credit{margin-top:4px;font-size:11.5px;color:var(--faint)}
+  footer .credit b{color:var(--pink);font-weight:700}
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(8px);
+    background:var(--pink);color:#fff;border-radius:999px;
+    padding:9px 20px;font-family:var(--disp);font-size:13.5px;font-weight:600;
+    opacity:0;pointer-events:none;box-shadow:var(--shadow);
+    transition:opacity .15s, transform .15s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="spark">✿</span> Octavia&rsquo;s Octane <span class="spark">✿</span></h1>
+  </header>
+  <p class="sub"><b>1 blue bin = 1 material.</b> Every part costs 14 materials, so one of every part — a full across — is <b>140 bins</b>.</p>
+
+  <div class="tabs" role="group" aria-label="Calculation mode">
+    <button id="modeBins" aria-pressed="true">Total Bins</button>
+    <button id="modeParts" aria-pressed="false">Parts Per Bench</button>
+  </div>
+  <div class="card input-card">
+    <label for="amount" id="amountLabel">Total blue bins</label>
+    <input id="amount" type="number" min="0" step="1" value="140" inputmode="numeric">
+    <div class="steppers" id="steppers"></div>
+  </div>
+
+  <div class="summary">
+    <div class="stat parts"><div class="k">Parts per bench</div><div class="v" id="perBench">1</div></div>
+    <div class="stat bins"><div class="k">Bins needed</div><div class="v" id="used">140</div></div>
+    <div class="stat leftover"><div class="k">Bins left over</div><div class="v" id="left">0</div></div>
+    <div class="stat total"><div class="k">Total parts made</div><div class="v" id="totalParts">10</div></div>
+  </div>
+  <p class="hint" id="hint"></p>
+
+  <div class="section-head">
+    <h2><span class="dot">🔧</span> Bench Loadout</h2>
+    <span class="meta"><span id="loadedCount">0</span>/10 loaded · tap to check off <button class="btn small" id="resetLoaded">Reset</button></span>
+  </div>
+  <div class="benches" id="benches"></div>
+  <div class="banner" id="banner">
+    <div class="big">✨ All benches loaded! ✨</div>
+    <div class="small">Every station is stocked — time to build, cutie</div>
+  </div>
+
+  <div class="section-head">
+    <h2><span class="dot">🛍️</span> Shopping List</h2>
+    <button class="btn small" id="copyList">Copy List ♡</button>
+  </div>
+  <table>
+    <thead><tr><th>Material</th><th style="text-align:right">Blue bins</th><th style="text-align:right">Share</th></tr></thead>
+    <tbody id="shopping"></tbody>
+  </table>
+
+  <footer>Octavia&rsquo;s Octane ♡ 14 materials per part · 140 per across
+    <div class="credit">made with love by <b>Jack G.</b></div>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+// ---- data --------------------------------------------------------------
+// materials per ONE part (every part costs 14 materials total)
+const BENCHES = [
+  {name:'Brakes',        mats:{'Rubber':14}},
+  {name:'Axels',         mats:{'Steel':14}},
+  {name:'Radiator',      mats:{'Copper':14}},
+  {name:'Clutch',        mats:{'Steel':7,'Circuit Boards':7}},
+  {name:'Transmission',  mats:{'Steel':7,'Plastic':7}},
+  {name:'Electronics',   mats:{'Circuit Boards':14}},
+  {name:'Fuel Injectors',mats:{'Metal Offcuts':14}},
+  {name:'Tires',         mats:{'Rubber':14}},
+  {name:'Body',          mats:{'Glass':7,'Plastic':7}},
+  {name:'Engine',        mats:{'Steel':7,'Alloy':7}},
+];
+const SET_COST = 140; // bins for 1 of every part
+const MAT_ORDER = ['Rubber','Steel','Copper','Circuit Boards','Plastic','Metal Offcuts','Glass','Alloy'];
+const MAT_COLOR = {
+  'Rubber':'#b9aec6','Steel':'#9db8d6','Copper':'#f0a377','Circuit Boards':'#8ed6a9',
+  'Plastic':'#f6d98a','Metal Offcuts':'#a9b8c9','Glass':'#93d4ef','Alloy':'#c7a9ef'
+};
+
+// ---- state -------------------------------------------------------------
+const $ = id => document.getElementById(id);
+let mode = 'bins';           // 'bins' | 'parts'
+let loaded = new Set();      // checked-off benches
+
+// localStorage is optional — works on the hosted site, silently skipped elsewhere
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+};
+
+// ---- ui helpers --------------------------------------------------------
+const STEPS = { bins:[-700,-140,140,700], parts:[-5,-1,1,5] };
+function buildSteppers(){
+  $('steppers').innerHTML = STEPS[mode].map(d =>
+    `<button data-d="${d}">${d>0?'+':'−'}${Math.abs(d)}</button>`).join('');
+  $('steppers').querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      $('amount').value = Math.max(0, val() + Number(b.dataset.d));
+      render();
+    });
+  });
+}
+function val(){ return Math.max(0, Math.floor(Number($('amount').value) || 0)); }
+let toastTimer;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+// ---- core --------------------------------------------------------------
+function render(){
+  const v = val();
+  const per  = mode==='bins' ? Math.floor(v / SET_COST) : v;
+  const used = per * SET_COST;
+  const left = mode==='bins' ? v - used : 0;
+
+  $('perBench').textContent   = per;
+  $('used').textContent       = used;
+  $('left').textContent       = left;
+  $('totalParts').textContent = per * BENCHES.length;
+
+  const hint = $('hint');
+  if (mode==='bins'){
+    if (left > 0){
+      hint.className = 'hint';
+      hint.textContent = `${left} bin${left===1?'':'s'} left over — ${SET_COST-left} more would add 1 part to every bench ♡`;
+    } else {
+      hint.className = 'hint ok';
+      hint.textContent = v>0 ? 'Perfect fit — every bin is used! ✨' : 'Enter how many blue bins you have ♡';
+    }
+  } else {
+    hint.className = 'hint';
+    hint.textContent = `Gather ${used} blue bins to make ${per} of every part ♡`;
+  }
+
+  // bench cards
+  const shopping = {};
+  $('benches').innerHTML = BENCHES.map((b,i)=>{
+    const rows = Object.entries(b.mats).map(([m,q])=>{
+      const n = q * per;
+      shopping[m] = (shopping[m]||0) + n;
+      return `<div class="mat"><span class="lbl"><span class="chip" style="background:${MAT_COLOR[m]}"></span>${m}</span><span class="n">${n}</span></div>`;
+    }).join('');
+    const on = loaded.has(i);
+    return `<button class="bench" data-i="${i}" aria-pressed="${on}">
+      <span class="top"><span class="name">${b.name}</span><span class="tick" aria-hidden="true"></span></span>
+      ${rows}</button>`;
+  }).join('');
+  $('benches').querySelectorAll('.bench').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const i = Number(el.dataset.i);
+      loaded.has(i) ? loaded.delete(i) : loaded.add(i);
+      el.setAttribute('aria-pressed', loaded.has(i));
+      $('loadedCount').textContent = loaded.size;
+      $('banner').classList.toggle('show', loaded.size === BENCHES.length);
+    });
+  });
+  $('loadedCount').textContent = loaded.size;
+  $('banner').classList.toggle('show', loaded.size === BENCHES.length);
+
+  // shopping list with share bars
+  const total = used || 1;
+  let sum = 0;
+  $('shopping').innerHTML = MAT_ORDER.map(m=>{
+    const n = shopping[m]||0; sum += n;
+    const pct = used ? Math.round(n/total*100) : 0;
+    return `<tr><td><span class="lbl"><span class="chip" style="background:${MAT_COLOR[m]}"></span>${m}</span>
+      <span class="bar"><i style="width:${pct}%;background:${MAT_COLOR[m]}"></i></span></td>
+      <td class="num">${n}</td><td class="pct">${pct}%</td></tr>`;
+  }).join('') + `<tr class="total"><td>Total bins</td><td class="num">${sum}</td><td class="pct"></td></tr>`;
+
+  store.set('across-mode', mode);
+  store.set('across-amount', String(v));
+}
+
+// ---- QoL: copy shopping list ------------------------------------------
+$('copyList').addEventListener('click', async ()=>{
+  const per = Number($('perBench').textContent);
+  const lines = [`Octavia's Octane — ${per} of every part (${per*SET_COST} bins)`,''];
+  const shopping = {};
+  BENCHES.forEach(b=>Object.entries(b.mats).forEach(([m,q])=>shopping[m]=(shopping[m]||0)+q*per));
+  MAT_ORDER.forEach(m=>lines.push(`${m}: ${shopping[m]||0}`));
+  lines.push('','Per bench:');
+  BENCHES.forEach(b=>{
+    const mats = Object.entries(b.mats).map(([m,q])=>`${q*per} ${m}`).join(' + ');
+    lines.push(`${b.name}: ${mats}`);
+  });
+  const text = lines.join('\n');
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('Shopping list copied ♡');
+  }catch(e){
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('Shopping list copied ♡');
+  }
+});
+
+// ---- QoL: mode toggle --------------------------------------------------
+function setMode(m){
+  mode = m;
+  $('modeBins').setAttribute('aria-pressed', m==='bins');
+  $('modeParts').setAttribute('aria-pressed', m==='parts');
+  $('amountLabel').textContent = m==='bins' ? 'Total blue bins' : 'Parts per bench';
+  if (m==='parts') $('amount').value = Math.floor(val()/SET_COST);
+  else $('amount').value = val()*SET_COST;
+  buildSteppers();
+  render();
+}
+$('modeBins').addEventListener('click', ()=>{ if(mode!=='bins') setMode('bins'); });
+$('modeParts').addEventListener('click', ()=>{ if(mode!=='parts') setMode('parts'); });
+
+// ---- QoL: reset check-offs --------------------------------------------
+$('resetLoaded').addEventListener('click', ()=>{ loaded.clear(); render(); });
+
+$('amount').addEventListener('input', render);
+
+// ---- init (restore last session if available) -------------------------
+const savedMode = store.get('across-mode');
+const savedAmount = store.get('across-amount');
+if (savedAmount !== null) $('amount').value = savedAmount;
+if (savedMode === 'parts'){ mode='parts'; $('modeBins').setAttribute('aria-pressed','false'); $('modeParts').setAttribute('aria-pressed','true'); $('amountLabel').textContent='Parts per bench'; }
+buildSteppers();
+render();
+</script>
+</body>
+</html>
