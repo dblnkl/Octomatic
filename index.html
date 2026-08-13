@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Octavia's Octane</title>
-<meta name="description" content="Octavia's Octane — a blue bin → bench loadout calculator. Enter your total blue bins and get an even part count for every bench, plus a full material shopping list.">
+<title>Octomatic</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
+<meta name="description" content="Octomatic's — a blue bin → bench loadout calculator. Enter your total blue bins and get an even part count for every bench, plus a full material shopping list.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -182,7 +183,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><span class="spark">✿</span> Octavia&rsquo;s Octane <span class="spark">✿</span></h1>
+    <h1><span class="spark">✿</span> Octomatic <span class="spark">✿</span></h1>
   </header>
   <p class="sub"><b>1 blue bin = 1 material.</b> Every part costs 14 materials, so one of every part — a full across — is <b>140 bins</b>.</p>
 
@@ -223,7 +224,7 @@
     <tbody id="shopping"></tbody>
   </table>
 
-  <footer>Octavia&rsquo;s Octane ♡ 14 materials per part · 140 per across
+  <footer>Octomatics ♡ 14 materials per part · 140 per across
     <div class="credit">made with 'love' by <b>Jack G.</b></div>
   </footer>
 </div>
@@ -350,7 +351,7 @@ function render(){
 // ---- QoL: copy shopping list ------------------------------------------
 $('copyList').addEventListener('click', async ()=>{
   const per = Number($('perBench').textContent);
-  const lines = [`Octavia's Octane — ${per} of every part (${per*SET_COST} bins)`,''];
+  const lines = [`Octomatic — ${per} of every part (${per*SET_COST} bins)`,''];
   const shopping = {};
   BENCHES.forEach(b=>Object.entries(b.mats).forEach(([m,q])=>shopping[m]=(shopping[m]||0)+q*per));
   MAT_ORDER.forEach(m=>lines.push(`${m}: ${shopping[m]||0}`));
